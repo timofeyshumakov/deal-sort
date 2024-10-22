@@ -182,7 +182,7 @@
             return;
           }
           this.isLoading = true;
-        // try {
+         try {
             this.filteredDeals = [];
             this.deals = await this.callApi('crm.deal.list', { "STAGE_SEMANTIC_ID": "P", "STAGE_ID": this.selectedStages }, ['TITLE', 'OPPORTUNITY', "CURRENCY_ID", "ID"]);
             const ids = this.deals.map(obj => obj.ID);
@@ -230,11 +230,11 @@
             this.displayData();
 
 
-       //  } catch (error) {
-       //     this.dialog = true;
-       //   }finally{
+         } catch (error) {
+            this.dialog = true;
+          }finally{
             this.isLoading = false;
-       //  }
+         }
         },
         displayData() {
           this.items = this.isChecked ? this.filteredDeals : this.deals;
