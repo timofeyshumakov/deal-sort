@@ -31,7 +31,8 @@
       <v-container fluid>
       <h1>Сортировка сделок</h1>
       <v-form>
-        <v-select v-model="selectedStages" :items="stges" label="Выберите стадии сделок" item-title="NAME" item-value="STATUS_ID" multiple chips clearable>
+        <v-select v-model="selectedFunnel" :items="funnels" label="Выберите воронку" item-title="name" item-value="id" clearable @update:modelValue="updateStages"></v-select>
+        <v-select v-model="selectedStages" :items="stages" label="Выберите стадии сделок" item-title="NAME" item-value="STATUS_ID" multiple chips clearable>
           <template v-slot:prepend-item>
             <v-list-item @click="">
               <v-list-item-content>
@@ -82,13 +83,13 @@
         class="elevation-1"
       >
       <template v-slot:item.TITLE="{ item }">
-        <a :href="`https://${domain}/crm/deal/details/${item.ID}/`" target="_blank">{{ item.TITLE }}</a>
+        <a :href="`https://${domain}/crm/deal/details/${item.ID}/`">{{ item.TITLE }}</a>
       </template>
       <template v-slot:item.OPPORTUNITY="{ item }">
         <span>{{ formatNumber(item.OPPORTUNITY) }}</span>
       </template>
       <template v-slot:item.PAYED="{ item }">
-        <a v-if="item.INVOICE_ID" :href="`https://${domain}/crm/type/31/details/${item.INVOICE_ID}/`" target="_blank">{{ formatNumber(item.PAYED) }}</a>
+        <a v-if="item.INVOICE_ID" :href="`https://${domain}/crm/type/31/details/${item.INVOICE_ID}/`">{{ formatNumber(item.PAYED) }}</a>
         <span v-else>{{ formatNumber(item.PAYED) }}</span>
       </template>
         <template #top>
@@ -119,6 +120,7 @@
   </main>
 </template>
 
+
 <script>
 
 
@@ -132,6 +134,9 @@
       data() {
         return {
           isChecked: true,
+          funnels: [],
+          selectedFunnel: 0,
+          funnelsStages: [],
           currencyTemplate: " руб.",
           domain: "",
           items: [],
@@ -147,8 +152,8 @@
           dialogStages: false,
           selectedAllStages: false,
           isLoading: true,
-          stges: [],
-          stgesIds: [],
+          stages: [],
+          stagesIds: [],
           pagination: {
             page: 1,
             rowsPerPage: 10,
@@ -184,14 +189,14 @@
           this.isLoading = true;
          try {
             this.filteredDeals = [];
-            this.deals = await this.callApi('crm.deal.list', { "STAGE_SEMANTIC_ID": "P", "STAGE_ID": this.selectedStages }, ['TITLE', 'OPPORTUNITY', "CURRENCY_ID", "ID"]);
+            this.deals = await this.callApi('crm.deal.list', { "STAGE_SEMANTIC_ID": "P", "STAGE_ID": this.selectedStages, "CATEGORY_ID": this.selectedFunnel }, ['TITLE', 'OPPORTUNITY', "CURRENCY_ID", "ID"]);
             const ids = this.deals.map(obj => obj.ID);
             this.sumDeals = this.deals.reduce((accumulator, currentValue) => accumulator + +currentValue.OPPORTUNITY, 0);
-            const itterations = Math.ceil(ids.length / 50);
+            const itterations = Math.ceil(ids.length / 500);
             let invoicesChunk = [];
             let invoices = [];
             for(let i = 0; i < itterations; i++){
-              invoicesChunk = await this.callApi('crm.item.list', { "parentId2": ids.slice(i * 50, (i + 1) * 50)}, "", "31");
+              invoicesChunk = await this.callApi('crm.item.list', { "parentId2": ids.slice(i * 500, (i + 1) * 500)}, "", "31");
               invoices.push(invoicesChunk.items);
             }
 
@@ -208,11 +213,11 @@
               const invoiceMultplier = invoiceCurrency.AMOUNT / invoiceCurrency.AMOUNT_CNT;
               const invoiceConverted = invoice.opportunity * invoiceMultplier;
               const invoicePrepayed = Math.round(invoiceConverted / 2 * 100) /100;
-                if(invoice.stageId === this.invoicesStages.payed) {
+                if(this.invoicesStages.payed.includes(invoice.stageId)){
                   item.PAYED = invoiceConverted;
                   item.INVOICE_ID = invoice.id;
                   invoicesPayed += invoiceConverted;
-                }else if(invoice.stageId === this.invoicesStages.prepayed){
+                }else if(this.invoicesStages.prepayed.includes(invoice.stageId)){
                   item.PAYED = invoicePrepayed;
                   item.INVOICE_ID = invoice.id;
                   invoicesPrepayed += invoicePrepayed;
@@ -244,7 +249,7 @@
         },
         selectAllStages(){
           if(this.selectedAllStages){
-            this.selectedStages = this.stgesIds;
+            this.selectedStages = this.stages.map(item => item.STATUS_ID);
           }else{
             this.selectedStages = [];
           }
@@ -271,6 +276,9 @@
           }
 
           const exceptions = ['crm.status.list'];
+          if(method === "crm.dealcategory.stage.list"){
+            params.id = entityTypeId;
+          }
           await new Promise((resolve, reject) => {
             BX24.callMethod(method, params, (res) => {
               if (res.data()) {
@@ -317,24 +325,74 @@
           }
           return data;
         },
+        async getFunnels(funnels){
+            let data = [];
+            let cmd = {};
+            for (let i = 0; i < funnels.length; i++) {
+              const key = `cmd${i}`;
+                const value = {
+                  method: "crm.dealcategory.stage.list",
+                  params: {
+                    id: this.funnels[i].id,
+                  }
+                }
+              cmd[key] = value;
+            }
+            //стадий в воронке будет точно меньше 50
+            await new Promise((resolve, reject) => {
+              BX24.callBatch(cmd, (res) => {
+                for (let i = 0; i < funnels.length; i++) {
+                  let key = `cmd${i}`;
+                  data.push(res[`cmd${i}`].data());
+                }
+                resolve();
+              });
+            })
+          return data;
+        },
+        async getDealsStages(){
+
+          let data = [];
+          let resultData = [];
+            let cmd = {};
+            for (let i = 0; i < this.funnels.length; i++) {
+              const key = `cmd${i}`;
+                const value = {
+                  method: "crm.status.list",
+                  params: {
+                    select: ["STATUS_ID", "NAME"],
+                    filter: { 'ENTITY_ID': i === 0 ? "DEAL_STAGE" : `DEAL_STAGE_${this.funnels[i].id}` },
+                  }
+                }
+              cmd[key] = value;
+            }
+            await new Promise((resolve, reject) => {
+              BX24.callBatch(cmd, (res) => {
+                for (let i = 0; i < this.funnels.length; i++) {
+                  let key = `cmd${i}`;
+                  data.push(res[`cmd${i}`].data());
+                }
+                resolve();
+              });
+            })
+          return data;
+        },
+        updateStages(value) {
+          this.stages = this.funnelsStages[this.funnels.findIndex(funnel => funnel.id === value)];
+          this.selectedStages = [];
+          this.selectedAllStages = false;
+        }
       },
       async mounted() {
 
-          try {
+          //try {
+
             const response = await fetch('./invoices_stages.json');
             this.invoicesStages = await response.json();
             this.domain = BX24.getDomain();
 
-
             await new Promise((resolve, reject) => {
           BX24.callBatch({
-            get_stges: {
-              method: 'crm.status.list',
-              params: {
-                filter: { 'ENTITY_ID': 'DEAL_STAGE' },
-                select: ["STATUS_ID", "NAME"],
-              }
-            },
             get_courses: {
               method: 'crm.currency.list',
               params: {
@@ -342,19 +400,41 @@
                 select: ["CURRENCY", "AMOUNT_CNT", "AMOUNT"],
               }
             },
+            get_funnels: {
+              method: 'crm.category.list',
+              params: {
+                filter: { "IS_LOCKED": "N" },
+                select: ["id", "name"],
+                entityTypeId: 2,
+              }
+            }
           },(res) => {
-            this.stges = res.get_stges.data();
             this.courses = res.get_courses.data();
-            this.stges = this.stges.filter(item => item.SEMANTICS === null);
-            this.stgesIds = this.stges.map(item => item.STATUS_ID);
+            const funnels = res.get_funnels.data();
+            this.funnels = funnels.categories;
             resolve();
           });
         })
-         } catch (error) {
-           this.dialog = true;
-        }finally{
+       // let funnelsStages = await this.getFunnelsStages(this.funnels);
+     //   const stagesNames = this.stages.map(item => item.NAME);
+
+        /*
+        this.funnelsStages = funnelsStages.map(innerArray => 
+        innerArray.filter(item => stagesNames.includes(item.NAME))
+        ).filter(innerArray => innerArray.length > 0);
+*/
+        let funnelsStages = await this.getDealsStages();
+
+        this.funnelsStages = funnelsStages.map(innerArray => 
+        innerArray.filter(item => item.SEMANTICS === null)
+        ).filter(innerArray => innerArray.length > 0);
+        this.stages = this.funnelsStages[0];
+        //this.stagesIds = this.stages.map(innerArray => innerArray.map(item => item.STATUS_ID));
+     //    } catch (error) {
+         //  this.dialog = true;
+    //    }finally{
             this.isLoading = false;
-        }
+   //     }
       }
   }
 </script>
@@ -383,6 +463,13 @@
     flex-direction: column
     gap: 0.75rem
     padding: 0.5rem
+    max-width: 120rem
+    width: 100%
+
+  .main
+    display: flex
+    flex-direction: column
+    align-items: center
 
   .v-card .v-card-text
     padding-top: 1rem
