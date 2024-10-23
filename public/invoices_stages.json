@@ -1,4 +1,5 @@
 {
-    "prepayed":"DT31_1:S",
-    "payed":"DT31_1:P"
+    "prepayed":["DT31_1:UC_IFGYKU", "DT31_1:S"],
+    "payed":["DT31_1:P"],
+    "funnelId":"0"
 }
