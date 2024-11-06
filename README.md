@@ -14,7 +14,7 @@
 <table width="100%" cellSpacing="1" cellpadding="1" border="1">
   <tr>
     <td><img  width="100%" src="https://github.com/user-attachments/assets/8d2b961c-12a2-469c-941c-0d1056bfc025"><div align="center">Начальный экран</div></td>
-    <td><img  width="100%" src="https://github.com/user-attachments/assets/9b01eebd-66a1-4a60-a809-3d2acccf1723"><div align="center">Получение данных</div></td>
+    <td><img  width="100%" src="https://github.com/user-attachments/assets/d4a61456-a656-499f-a314-b9dd2c97945c"><div align="center">Получение данных</div></td>
   </tr>
   <tr>
     <td><img  width="100%" src="https://github.com/user-attachments/assets/3613926f-50dd-44f6-91e4-e677c50ef64d"><div align="center">Показывать неоплаченные сделки</div></td>
