@@ -10,4 +10,4 @@
 <h4>Формат отображения данных: Дашборд с таблицей</h4>
 <h4>Было выделенно времени: 6 дней</h4>
 <h4>Затрачено времени: 6 дней на разработку и 1 день на тестирование</h4>
-<h3>Понравилось приложение? закажите похожее: <a target="_blank" href="https://t.me/timofey_bitrix24"><img alt="telegram"  width="32px" height="32px" title="telegram" src="https://github.com/user-attachments/assets/9092b79a-c4e0-45e0-af75-86ce4ad47b8b"></a> <a target="_blank" href="https://vk.com/timofey_bitrix24"><img  width="32px" height="32px" alt="vk" title="vk" src="https://github.com/user-attachments/assets/93ea1801-dd33-43ad-99c1-79c41c8ddfbd"></a></h3>
+<h3>Понравилось приложение? закажите похожее: <a target="_blank" href="https://t.me/timofey_bitrix24"><img alt="telegram"  width="24px" height="24px" title="telegram" src="https://github.com/user-attachments/assets/9092b79a-c4e0-45e0-af75-86ce4ad47b8b"></a> <a target="_blank" href="https://vk.com/timofey_bitrix24"><img  width="24px" height="24px" alt="vk" title="vk" src="https://github.com/user-attachments/assets/93ea1801-dd33-43ad-99c1-79c41c8ddfbd"></a></h3>
