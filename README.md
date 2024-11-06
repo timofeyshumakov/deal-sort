@@ -17,7 +17,6 @@
     <td><img  width="100%" src="https://github.com/user-attachments/assets/9b01eebd-66a1-4a60-a809-3d2acccf1723"><div align="center">Получение данных</div></td>
   </tr>
   <tr>
-    <td><img  width="100%" src="https://github.com/user-attachments/assets/f8bceb58-abaf-46d6-98f9-b512eb7c51e4"><div align="center">Конвертация валют</div></td>
     <td><img  width="100%" src="https://github.com/user-attachments/assets/3613926f-50dd-44f6-91e4-e677c50ef64d"><div align="center">Показывать неоплаченные сделки</div></td>
   </tr>
 </table>
