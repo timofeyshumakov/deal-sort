@@ -1,4 +1,4 @@
-<h2>Дашборд для анализа сделок</h2>
+<h2 align="center">Дашборд для анализа сделок</h2>
 <div width="100%" align="center">
 <table width="600px" cellSpacing="1" cellpadding="1" border="1">
 <tr><td><img  width="600px" src="https://github.com/user-attachments/assets/b61492f1-b7f0-4fa3-a609-e1b8b01a02ca"></td></tr>
